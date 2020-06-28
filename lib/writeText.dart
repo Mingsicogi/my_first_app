@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MyApp());
@@ -36,7 +39,20 @@ class ActionApp extends State<TextWriterApp> {
     setState(() {
       inputText = inputText + text + '\n';
     });
-    textEditingController.clear();
+
+    var headers = {'Content-Type': 'application/json'};
+    var requestBody = {
+      'fromUser': 'minssogi',
+      'text': text,
+    };
+
+    http.post(
+        "http://localhost:8080/message/send",
+        headers: headers,
+        body: jsonEncode(requestBody),
+    ).then((value) => {
+      value.statusCode == 200 ? textEditingController.clear() : print('데이터 저장 실패!!'),
+    });
   }
 
   @override
