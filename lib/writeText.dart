@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(MyApp());
@@ -32,10 +33,24 @@ class TextWriterApp extends StatefulWidget {
 
 class ActionApp extends State<TextWriterApp> {
 
-  String inputText = 'input text : \n';
+  String inputText = '';
   TextEditingController textEditingController = new TextEditingController();
+  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
-  void addText(String text) {
+  @override
+  void initState() {
+    super.initState();
+    _prefs.then((value){
+      var savedText = value.get('inputText');
+      if(savedText != null && savedText != '') {
+        setState(() {
+          inputText = savedText;
+        });
+      }
+    });
+  }
+
+  void addText(String text) async {
     setState(() {
       inputText = inputText + text + '\n';
     });
@@ -53,6 +68,10 @@ class ActionApp extends State<TextWriterApp> {
     ).then((value) => {
       value.statusCode == 200 ? textEditingController.clear() : print('데이터 저장 실패!!'),
     });
+
+    // data save in app
+    var prefers = await _prefs;
+    prefers.setString('inputText', inputText);
   }
 
   @override
@@ -86,7 +105,7 @@ class ActionApp extends State<TextWriterApp> {
               child: Row(
                 children: <Widget>[
                   Flexible(
-                    child: Text('$inputText'),
+                    child: Text('input text : $inputText'),
                   )
                 ],
               ),
